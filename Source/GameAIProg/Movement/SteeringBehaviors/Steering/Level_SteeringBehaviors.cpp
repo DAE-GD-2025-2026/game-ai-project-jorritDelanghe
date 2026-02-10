@@ -182,7 +182,7 @@ void ALevel_SteeringBehaviors::Tick(float DeltaTime)
 
 	for (ImGui_Agent& a : SteeringAgents)
 	{
-		if (a.Agent)
+		if (a.Agent && a.Behavior) //prevents crash
 		{
 			UpdateTarget(a);
 		}
@@ -226,6 +226,13 @@ void ALevel_SteeringBehaviors::SetAgentBehavior(ImGui_Agent& Agent)
 	switch (static_cast<BehaviorTypes>(Agent.SelectedBehavior))
 	{
 	//TODO; Implement behaviors setting here
+	case BehaviorTypes::Seek:
+		Agent.Behavior = std::make_unique<Seek>();
+		break;
+	case BehaviorTypes::Flee:
+		Agent.Behavior = std::make_unique<Flee>();
+		break;
+		
 	default:
 		assert(false); // Incorrect Agent Behavior gotten during SetAgentBehavior()	
 	}
@@ -249,7 +256,10 @@ void ALevel_SteeringBehaviors::RefreshTargetLabels()
 void ALevel_SteeringBehaviors::UpdateTarget(ImGui_Agent& Agent)
 {
 	// Note: MouseTarget position is updated via Level BP every click
-	
+	if (!Agent.Behavior)
+	{
+		return; //prevents crash
+	}
 	bool const bUseMouseAsTarget = Agent.SelectedTarget < 0;
 	if (!bUseMouseAsTarget)
 	{
