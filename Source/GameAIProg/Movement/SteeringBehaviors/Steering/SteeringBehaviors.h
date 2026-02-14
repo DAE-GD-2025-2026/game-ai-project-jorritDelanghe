@@ -27,13 +27,28 @@ protected:
 	
 };
 
-class Seek final : public ISteeringBehavior 
+class Seek : public ISteeringBehavior 
 {
 public:
 	Seek() = default;
 	virtual ~Seek() override = default;
 	
 	virtual SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent & Agent) override;
+};
+class Wander final : public Seek
+{
+public:
+	Wander() = default;
+	virtual ~Wander() override = default;
+	virtual SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent & Agent) override;
+	
+	void SetWanderOffset(float offset) {m_OffsetDistance =offset;}
+protected:
+	float m_OffsetDistance = 6.f; //offset agent
+	float m_Radius = 4.f; //wandering radius
+	float m_MaxAngleChange= FMath::DegreesToRadians(45); //max wander angle between calculated angles, change per frame 
+	float m_WanderAngle = 0.f; //last calculated angle
+	
 };
 class Flee final : public ISteeringBehavior
 {
