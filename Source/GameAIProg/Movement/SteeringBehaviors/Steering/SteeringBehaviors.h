@@ -76,5 +76,18 @@ public:
 	
 private:
 	float AngleSpeed {2.f};
-	
+};
+class Pursuit final :public ISteeringBehavior
+{
+	public:
+	Pursuit() =default;
+	virtual ~Pursuit() override = default;
+	virtual SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent & Agent) override;
+};
+class Evade final :public ISteeringBehavior
+{
+	public:
+	Evade() =default;
+	virtual ~Evade() override = default;
+	virtual SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent & Agent) override;
 };

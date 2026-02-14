@@ -166,3 +166,45 @@ SteeringOutput Face::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 	}
 	return steering;
 }
+
+SteeringOutput Pursuit::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
+{
+	SteeringOutput steering{};
+	const FVector2D directionToTarget {Target.Position - Agent.GetPosition()};
+	const double distance {directionToTarget.Length()};
+	const double timeToTarget { distance/Agent.GetMaxLinearSpeed()};
+	const FVector2D futurePosition {Target.Position + timeToTarget * Target.LinearVelocity};
+	
+	if (distance<1.0f) //set pursuit on zero if hit the object
+	{
+		steering.LinearVelocity = FVector2D::ZeroVector;
+		return steering;
+	}
+	
+	steering.LinearVelocity = futurePosition-Agent.GetPosition();
+	if (IsDebugging)
+	{
+		constexpr float offset{100.f};
+		float agentAngleRad = FMath::DegreesToRadians(Agent.GetRotation());
+		const FVector2D forwardDirection{FMath::Cos(agentAngleRad),FMath::Sin(agentAngleRad)};
+		
+		//current line agent is looking at
+		DrawDebugLine(Agent.GetWorld(),FVector{Agent.GetPosition(),0.f}
+			,FVector{Agent.GetPosition()+forwardDirection*offset,0.f},FColor::Green,false,0,1.f);
+		
+		//pursuit line
+		DrawDebugLine(Agent.GetWorld(),FVector{Agent.GetPosition(),0.f}
+			,FVector{futurePosition,0.f},FColor::Blue,false,0,1.f);
+		
+		//target line
+		DrawDebugLine(Agent.GetWorld(),FVector{Agent.GetPosition(),0.f}
+			,FVector{Target.Position,0.f},FColor::Red,false,0,1.f);
+		
+	}
+	return steering;
+}
+
+SteeringOutput Evade::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
+{
+	return SteeringOutput{};
+}
