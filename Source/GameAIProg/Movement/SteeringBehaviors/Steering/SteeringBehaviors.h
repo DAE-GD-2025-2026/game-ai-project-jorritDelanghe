@@ -23,6 +23,8 @@ public:
 
 protected:
 	FTargetData Target;
+	bool IsDebugging{true};
+	
 };
 
 class Seek final : public ISteeringBehavior 
@@ -39,4 +41,14 @@ public:
 	Flee() = default;
 	virtual ~Flee() override = default;
 	SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent & Agent) override;
+};
+
+class Arrive final:public ISteeringBehavior
+{
+public:
+	Arrive() = default;
+	virtual ~Arrive() override = default;
+	virtual SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent & Agent) override;
+private:
+	float OriginalMaxSpeed {1000.f};
 };

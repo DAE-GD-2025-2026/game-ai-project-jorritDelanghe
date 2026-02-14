@@ -5,6 +5,7 @@
 #include <format>
 #include <string>
 #include "imgui.h"
+#include "Framework/Animation/AttributeInterpolator.h"
 
 
 // Sets default values
@@ -226,6 +227,9 @@ void ALevel_SteeringBehaviors::SetAgentBehavior(ImGui_Agent& Agent)
 	switch (static_cast<BehaviorTypes>(Agent.SelectedBehavior))
 	{
 	//TODO; Implement behaviors setting here
+	case BehaviorTypes::Arrive:
+		Agent.Behavior = std::make_unique<Arrive>();
+		break;
 	case BehaviorTypes::Seek:
 		Agent.Behavior = std::make_unique<Seek>();
 		break;
