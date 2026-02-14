@@ -52,3 +52,14 @@ public:
 private:
 	float OriginalMaxSpeed {1000.f};
 };
+class Face final :public ISteeringBehavior
+{
+public:
+	Face() =default;
+	virtual ~Face() override = default;	
+	virtual SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent & Agent) override;
+	
+private:
+	float AngleSpeed {2.f};
+	
+};

@@ -9,6 +9,22 @@ SteeringOutput Seek::CalculateSteering(float DeltaT, ASteeringAgent & Agent)
 {
 	SteeringOutput steering{};
 	steering.LinearVelocity = Target.Position-Agent.GetPosition(); //no need to normalize, happens in movement input
+	
+	if (IsDebugging)
+	{
+		constexpr float offset{100.f};
+		float agentAngleRad = FMath::DegreesToRadians(Agent.GetRotation());
+		const FVector2D forwardDirection{FMath::Cos(agentAngleRad),FMath::Sin(agentAngleRad)};
+		
+		//current line agent is looking at
+		DrawDebugLine(Agent.GetWorld(),FVector{Agent.GetPosition(),0.f}
+			,FVector{Agent.GetPosition()+forwardDirection*offset,0.f},FColor::Green,false,0,1.f);
+		
+		//target line
+		DrawDebugLine(Agent.GetWorld(),FVector{Agent.GetPosition(),0.f}
+			,FVector{Target.Position,0.f},FColor::Red,false,0,1.f);
+		
+	}
 	return steering;
 }
 
@@ -16,6 +32,23 @@ SteeringOutput Flee::CalculateSteering(float DeltaT, ASteeringAgent& Agent) //fl
 {
 	SteeringOutput steering{};
 	steering.LinearVelocity = Agent.GetPosition()- Target.Position;
+	
+	if (IsDebugging)
+	{
+		constexpr float offset{100.f};
+		float agentAngleRad = FMath::DegreesToRadians(Agent.GetRotation());
+		const FVector2D forwardDirection{FMath::Cos(agentAngleRad),FMath::Sin(agentAngleRad)};
+		
+		//current line agent is looking at
+		DrawDebugLine(Agent.GetWorld(),FVector{Agent.GetPosition(),0.f}
+			,FVector{Agent.GetPosition()+forwardDirection*offset,0.f},FColor::Green,false,0,1.f);
+		
+		//target line
+		DrawDebugLine(Agent.GetWorld(),FVector{Agent.GetPosition(),0.f}
+			,FVector{Target.Position,0.f},FColor::Red,false,0,1.f);
+		
+	}
+	
 	return steering;
 }
 
@@ -23,7 +56,7 @@ SteeringOutput Arrive::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 {
 	constexpr float slowRadius{ 100.f};
 	constexpr float fastRadius{ 500.f};
-	FVector2D toTarget{Target.Position - Agent.GetPosition()};
+	const FVector2D toTarget{Target.Position - Agent.GetPosition()};
 	const double distance {toTarget.Length()};
 
 	SteeringOutput steering{};
@@ -47,16 +80,48 @@ SteeringOutput Arrive::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 	 
 	if (IsDebugging)
 	{
+		//target line
 		DrawDebugLine(Agent.GetWorld(),FVector{Agent.GetPosition(),0.f}
 			,FVector{Target.Position,0.f},FColor::Red,false,0,1.f);
 		
+		//big circle
 		DrawDebugCircle(Agent.GetWorld(),FVector{Agent.GetPosition(),0.f},fastRadius
 			,100,FColor::Blue,false,-1,0,1.f
 			, FVector(1, 0, 0), FVector(0, 1, 0), true);
 		
+		//small circle
 		DrawDebugCircle(Agent.GetWorld(),FVector{Agent.GetPosition(),0.f},slowRadius
 		,100,FColor::Green,false,-1,0,1.f
 		, FVector(1, 0, 0), FVector(0, 1, 0), true);
+		
+	}
+	return steering;
+}
+
+SteeringOutput Face::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
+{
+	const FVector2D directionToTarget {Target.Position - Agent.GetPosition()};
+	SteeringOutput steering{}; 
+	float angleTarget = FMath::RadiansToDegrees(FMath::Atan2(directionToTarget.Y, directionToTarget.X));
+	
+	//shorest rotation
+	float angleDiff = FMath::FindDeltaAngleDegrees(Agent.GetRotation(),angleTarget);
+	
+	steering.AngularVelocity = angleDiff*AngleSpeed;
+	
+	if (IsDebugging)
+	{
+		constexpr float offset{100.f};
+		float agentAngleRad = FMath::DegreesToRadians(Agent.GetRotation());
+		const FVector2D forwardDirection{FMath::Cos(agentAngleRad),FMath::Sin(agentAngleRad)};
+		
+		//current line agent is looking at
+		DrawDebugLine(Agent.GetWorld(),FVector{Agent.GetPosition(),0.f}
+			,FVector{Agent.GetPosition()+forwardDirection*offset,0.f},FColor::Green,false,0,1.f);
+		
+		//target line
+		DrawDebugLine(Agent.GetWorld(),FVector{Agent.GetPosition(),0.f}
+			,FVector{Target.Position,0.f},FColor::Red,false,0,1.f);
 		
 	}
 	return steering;
