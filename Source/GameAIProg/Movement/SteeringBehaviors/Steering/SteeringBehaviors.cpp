@@ -33,10 +33,18 @@ SteeringOutput Wander::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 	// Forward direction
 	float agentAngleRad = FMath::DegreesToRadians(Agent.GetRotation());
 	const FVector2D forwardDirection{FMath::Cos(agentAngleRad),FMath::Sin(agentAngleRad)};
+	SteeringOutput steering{};
 	
 	// Circle center
-	const FVector2D centerCircle = forwardDirection * m_OffsetDistance;
-	SteeringOutput steering{};
+	FVector2D centerCircle{};
+	if (m_IsCenterWanderer)
+	{
+		centerCircle = forwardDirection * m_OffsetDistance;
+	}
+	else
+	{
+		centerCircle = Agent.GetPosition()+(forwardDirection * m_OffsetDistance);
+	}
 	
 	//set rand angle
 	m_WanderAngle += (FMath::SRand() * 2.f - 1.f) * m_MaxAngleChange;
@@ -52,10 +60,11 @@ SteeringOutput Wander::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 	if (IsDebugging)
 	{
 		constexpr float offset{50.f};
-		//big circle
+		//wander circle
 		DrawDebugCircle(Agent.GetWorld(),FVector{centerCircle,0.f},m_Radius
 			,100,FColor::Blue,false,-1,0,1.f
 			, FVector(1, 0, 0), FVector(0, 1, 0), true);
+		
 		
 		//current line agent is looking at
 		DrawDebugLine(Agent.GetWorld(),FVector{Agent.GetPosition(),0.f}
