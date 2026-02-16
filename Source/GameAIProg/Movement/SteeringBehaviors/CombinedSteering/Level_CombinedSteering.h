@@ -48,6 +48,7 @@ private:
 		std::unique_ptr<ISteeringBehavior> Behavior{nullptr}; //blended steering
 		
 		std::vector<std::unique_ptr<ISteeringBehavior>> SubBehaviors; //individual Behaviors
+		std::vector<std::string> BehaviorNames;
 		
 		int SelectedBehavior{static_cast<int>(BehaviorTypes::Drunk)};
 		int SelectedTarget = -1;

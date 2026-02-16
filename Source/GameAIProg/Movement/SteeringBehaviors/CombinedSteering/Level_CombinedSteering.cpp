@@ -61,6 +61,7 @@ void ALevel_CombinedSteering::SetAgentBehavior(ImGui_Agent& Agent)
 {
 	Agent.Behavior.reset();
 	Agent.SubBehaviors.clear();
+	Agent.BehaviorNames.clear();
 	
 	//init here so the code doesnt go out of scope in the swicth
 	std::vector<BlendedSteering::WeightedBehavior> weightedBehaviors;
@@ -71,12 +72,15 @@ void ALevel_CombinedSteering::SetAgentBehavior(ImGui_Agent& Agent)
 		
 		Agent.SubBehaviors.push_back(std::make_unique<Seek>());
 		Agent.SubBehaviors.push_back(std::make_unique<Wander>());
+		Agent.BehaviorNames.push_back("Seek");
+		Agent.BehaviorNames.push_back("Wander");
 		
 		weightedBehaviors =
 		{
 			BlendedSteering::WeightedBehavior(Agent.SubBehaviors[0].get(),0.5f)
 			,BlendedSteering::WeightedBehavior(Agent.SubBehaviors[1].get(),0.5f)
 		};
+		
 		Agent.Behavior = std::make_unique<BlendedSteering>(weightedBehaviors);
 		
 		break;
@@ -208,14 +212,13 @@ void ALevel_CombinedSteering::Tick(float DeltaTime)
 				if (auto* blended = static_cast<BlendedSteering*>(Agent.Behavior.get()))
 				{
 					auto& weights = blended->GetWeightedBehaviorsRef();
-					
-					ImGuiHelpers::ImGuiSliderFloatWithSetter("Seek",
-		  weights[0].Weight, 0.f, 1.f,
-		  [&weights](float InVal) { weights[0].Weight = InVal; }, "%.2f");
-					
-					ImGuiHelpers::ImGuiSliderFloatWithSetter("Wander",
-			weights[1].Weight, 0.f, 1.f,
-			[&weights](float InVal) { weights[1].Weight = InVal; }, "%.2f");
+					for (size_t index{}; index<weights.size(); ++index)
+					{
+						ImGuiHelpers::ImGuiSliderFloatWithSetter(Agent.BehaviorNames[index].c_str(),
+			  weights[index].Weight, 0.f, 1.f,
+			  [&weights,index](float InVal) { weights[index].Weight = InVal; }, "%.2f");
+						
+					}
 				}
 			}
 		}
