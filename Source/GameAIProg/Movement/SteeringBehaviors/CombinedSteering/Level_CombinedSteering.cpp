@@ -299,8 +299,9 @@ void ALevel_CombinedSteering::Tick(float DeltaTime)
 				ImGui::Spacing();
 
 				// Behavior weights
-				if (auto* blended = dynamic_cast<BlendedSteering*>(A.Behavior.get()))
+				if (static_cast<BehaviorTypes>(A.SelectedBehavior) != BehaviorTypes::PriorityEvader)
 				{
+					auto* blended = static_cast<BlendedSteering*>(A.Behavior.get());
 					auto& weights = blended->GetWeightedBehaviorsRef();
 
 					ImGui::Text("Behavior Weights (sum = 1.0):");
@@ -385,7 +386,7 @@ void ALevel_CombinedSteering::Tick(float DeltaTime)
 							for (auto& wb : weights) wb.Weight /= total;
 					}
 				}
-				else if (auto* priority = dynamic_cast<PrioritySteering*>(A.Behavior.get()))
+				else
 				{
 					ImGui::Text("Priority Steering");
 					ImGui::TextDisabled("Evade when close, Wander when far");

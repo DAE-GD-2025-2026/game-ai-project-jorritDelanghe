@@ -225,10 +225,12 @@ SteeringOutput Evade::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 	if (distance>maxDistance) //set evade on zero if far enough from the object
 	{
 		steering.LinearVelocity = FVector2D::ZeroVector;
+		steering.IsValid = false;
 		return steering;
 	}
 	
 	steering.LinearVelocity = Agent.GetPosition()-futurePosition;
+	steering.IsValid = true;
 	if (IsDebugging)
 	{
 		constexpr float offset{100.f};
