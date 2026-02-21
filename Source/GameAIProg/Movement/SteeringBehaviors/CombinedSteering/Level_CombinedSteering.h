@@ -38,7 +38,8 @@ private:
 	enum class BehaviorTypes
 	{
 		Drunk,
-
+		Evader,
+		PriorityEvader,
 		// @ End
 		Count
 	};
@@ -52,6 +53,7 @@ private:
 		
 		int SelectedBehavior{static_cast<int>(BehaviorTypes::Drunk)};
 		int SelectedTarget = -1;
+		int SelectedBehaviorToAdd{};
 	};
 	std::vector<ImGui_Agent> SteeringAgents{};
 	std::vector<std::string> TargetLabels{};
@@ -65,5 +67,7 @@ private:
 	void RefreshTargetLabels();
 	void UpdateTarget(ImGui_Agent& Agent);
 	void RefreshAgentTargets(unsigned int IndexRemoved);
+	void NormalizeWeights(std::vector<BlendedSteering::WeightedBehavior>& Weights, int ChangedIndex);
+	
 	
 };
