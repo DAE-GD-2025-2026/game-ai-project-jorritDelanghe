@@ -4,7 +4,7 @@
 
 //SEEK
 //*******
-// TODO: Do the Week01 assignment :^)
+
 SteeringOutput Seek::CalculateSteering(float DeltaT, ASteeringAgent & Agent)
 {
 	SteeringOutput steering{};
