@@ -15,6 +15,10 @@ Flock::Flock(
 	, pAgentToEvade{pAgentToEvade}
 {
 	Agents.SetNum(FlockSize);
+	pCohesionBehavior = std::make_unique<Cohesion>(this);
+	pBlendedSteering = std::make_unique< BlendedSteering>(
+	{pCohesionBehavior,cohesionWeight
+	});
 
 }
 
@@ -25,7 +29,12 @@ Flock::~Flock()
 
 void Flock::Tick(float DeltaTime)
 {
- // TODO: update the flock
+	for ( auto agent: Agents)
+	{
+			RegisterNeighbors(agent); 
+			agent->Tick(DeltaTime);
+		
+	}
  // TODO: for every agent:
   // TODO: register the neighbors for this agent (-> fill the memory pool with the neighbors for the currently evaluated agent)
   // TODO: update the agent (-> the steeringbehaviors use the neighbors in the memory pool)
