@@ -14,17 +14,24 @@ Flock::Flock(
 	, FlockSize{ FlockSize }
 	, pAgentToEvade{pAgentToEvade}
 {
-	// Agents.SetNum(FlockSize);
-	// pCohesionBehavior = std::make_unique<Cohesion>(this);
-	// pBlendedSteering = std::make_unique< BlendedSteering>(
-	// {pCohesionBehavior,cohesionWeight
-	// });
+	Agents.Reserve(FlockSize);
+	for (int index{}; index<FlockSize;++index)
+	{
+		FVector pos {FMath::RandRange(-WorldSize,WorldSize)
+						,FMath::RandRange(-WorldSize,WorldSize),0.0f};
+		
+		ASteeringAgent* agent = pWorld->SpawnActor<ASteeringAgent>(AgentClass,FTransform(pos));
+		if (agent) Agents.Add(agent);
+	}
 
 }
 
 Flock::~Flock()
 {
- // TODO: Cleanup any additional data
+ for (auto& agent:Agents)
+ {
+ 	if (agent) agent->Destroy();
+ }
 }
 
 void Flock::Tick(float DeltaTime)
@@ -99,9 +106,30 @@ void Flock::ImGuiRender(ImVec2 const& WindowPos, ImVec2 const& WindowSize)
 
 void Flock::RenderNeighborhood()
 {
+	constexpr float offset{100.f};
+	constexpr float thickness{1.f};
+	constexpr float radius{100.f};
  // TODO: Debugrender the neighbors for the first agent in the flock
-}
+	for (auto neighbour: Neighbors)
+	{
+		float agentAngleRad = FMath::DegreesToRadians(neighbour->GetRotation());
+		FVector2D forwardDirection{std::cos(agentAngleRad),std::sin(agentAngleRad)};
+		
+		DrawDebugLine(
+			neighbour->GetWorld()
+			,FVector{neighbour->GetPosition(),0.f}
+			,FVector{neighbour->GetPosition() + forwardDirection* offset,0.f}
+			,FColor::Cyan,false,0,thickness);
+		
+		DrawDebugCircle(
+			neighbour->GetWorld()
+			,FVector{neighbour->GetPosition(),0.f}
+			,radius
+			,100,FColor::Green,false,-1,0,1.f
+			,FVector(1, 0, 0), FVector(0, 1, 0), true);
 
+	}
+}
 #ifndef GAMEAI_USE_SPACE_PARTITIONING
 void Flock::RegisterNeighbors(ASteeringAgent* const pAgent)
 {
