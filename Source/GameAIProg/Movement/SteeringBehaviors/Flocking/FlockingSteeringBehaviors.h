@@ -7,7 +7,7 @@ class Flock;
 class Cohesion final : public Seek
 {
 public:
-	Cohesion(Flock* const pFlock) :m_pFlock(pFlock) {};
+	explicit Cohesion(Flock* const pFlock) :m_pFlock(pFlock) {};
 
 	//Cohesion Behavior
 	virtual SteeringOutput CalculateSteering(float deltaT, ASteeringAgent& pAgent) override;
@@ -18,12 +18,12 @@ private:
 
 //SEPARATION - FLOCKING
 //*********************
-class Seperation final: public  ISteeringBehavior
+class Separation final: public  ISteeringBehavior
 {
 	public:
-	Seperation(Flock*pFlock);
+	explicit Separation(Flock*pFlock) : m_pFlock(pFlock){};
 	
-	//Speration Behavior
+	//Separation Behavior
 	virtual SteeringOutput CalculateSteering(float deltaT, ASteeringAgent& pAgent) override;
 	
 private:
@@ -32,10 +32,10 @@ private:
 
 //VELOCITY MATCH - FLOCKING
 //************************
-class VelocityMatch: public ISteeringBehavior
+class VelocityMatch final: public ISteeringBehavior
 {
 	public:
-	VelocityMatch(Flock*pFlock):m_pFlock(pFlock) {};
+	explicit VelocityMatch(Flock*pFlock):m_pFlock(pFlock) {};
 	virtual SteeringOutput CalculateSteering(float deltaT,ASteeringAgent& pAgent)override;
 private:
 	Flock*m_pFlock {nullptr};

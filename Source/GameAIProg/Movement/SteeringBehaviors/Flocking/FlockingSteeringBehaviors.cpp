@@ -27,7 +27,36 @@ SteeringOutput Cohesion::CalculateSteering(float deltaT, ASteeringAgent& pAgent)
 
 //*********************
 //SEPARATION (FLOCKING)
-
+SteeringOutput Separation::CalculateSteering(float deltaT, ASteeringAgent& pAgent)
+{
+	SteeringOutput output{};
+	const int count {m_pFlock->GetNrOfNeighbors()};
+	if (count == 0) return output;
+	
+	FVector2D steerAway{FVector::ZeroVector};
+	const auto& neighbours = m_pFlock->GetNeighbors();
+	constexpr float epsilon{0.0001f};
+	float  distance{}; //not allocating memory every time in loop
+	FVector2D toNeighbour{FVector2D::ZeroVector};
+	
+	for (int index{}; index<count;++index)
+	{
+		toNeighbour = neighbours[index]->GetPosition() - pAgent.GetPosition();
+		distance = toNeighbour.Length();
+		if (distance>=epsilon)
+		{
+			steerAway -= toNeighbour/(distance*distance);
+			
+		}
+	}
+	if (!steerAway.IsZero())
+	{
+		steerAway.Normalize();
+		output.LinearVelocity =steerAway*pAgent.GetMaxLinearSpeed();
+		output.IsValid = true;
+	}
+	return output;
+}
 //*************************
 //VELOCITY MATCH (FLOCKING)
 SteeringOutput VelocityMatch::CalculateSteering(float deltaT,ASteeringAgent& pAgent)
