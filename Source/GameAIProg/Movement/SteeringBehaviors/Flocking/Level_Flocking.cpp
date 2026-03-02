@@ -34,7 +34,8 @@ void ALevel_Flocking::BeginPlay()
 void ALevel_Flocking::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	
+	pFlock->UpdateEvadeTarget();
 	pFlock->ImGuiRender(WindowPos, WindowSize);
 	pFlock->Tick(DeltaTime);
 	pFlock->RenderDebug();

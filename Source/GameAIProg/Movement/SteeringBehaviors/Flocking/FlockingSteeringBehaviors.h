@@ -21,7 +21,7 @@ private:
 class Separation final: public  ISteeringBehavior
 {
 	public:
-	explicit Separation(Flock*pFlock) : m_pFlock(pFlock){};
+	explicit Separation(Flock*const pFlock) : m_pFlock(pFlock){};
 	
 	//Separation Behavior
 	virtual SteeringOutput CalculateSteering(float deltaT, ASteeringAgent& pAgent) override;
@@ -35,7 +35,7 @@ private:
 class VelocityMatch final: public ISteeringBehavior
 {
 	public:
-	explicit VelocityMatch(Flock*pFlock):m_pFlock(pFlock) {};
+	explicit VelocityMatch(Flock*const pFlock):m_pFlock(pFlock) {};
 	virtual SteeringOutput CalculateSteering(float deltaT,ASteeringAgent& pAgent)override;
 private:
 	Flock*m_pFlock {nullptr};

@@ -9,11 +9,12 @@
 SteeringOutput Cohesion::CalculateSteering(float deltaT, ASteeringAgent& pAgent)
 {
 	SteeringOutput output{};
+	if (m_pFlock->GetNrOfNeighbors() == 0) return output; 
 	FVector2D averagePos =  m_pFlock->GetAverageNeighborPos();
 	FVector2D toAveragePos = averagePos - pAgent.GetPosition();
 	const float epsilon = 0.001f;
 	
-	if (averagePos.IsZero()	) return output;
+	if (m_pFlock->GetNrOfNeighbors() == 0) return output;
 	
 	float distance = (averagePos - pAgent.GetPosition()).Length();
 	

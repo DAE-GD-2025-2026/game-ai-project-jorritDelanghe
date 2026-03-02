@@ -27,6 +27,8 @@ public:
 	~Flock();
 
 	void Tick(float DeltaTime);
+	void UpdateEvadeTarget();
+	
 	void RenderDebug();
 	void ImGuiRender(ImVec2 const& WindowPos, ImVec2 const& WindowSize);
 
@@ -47,6 +49,7 @@ public:
 private:
 	// For debug rendering purposes
 	UWorld* pWorld{nullptr};
+	float WorldSize;
 	
 	int FlockSize{0};
 	TArray<ASteeringAgent*> Agents{};
@@ -64,21 +67,27 @@ private:
 	ASteeringAgent* pAgentToEvade{nullptr};
 	
 	//Steering Behaviors
-	//std::unique_ptr<Separation> pSeparationBehavior{};
+	std::unique_ptr<Separation> pSeparationBehavior{};
 	std::unique_ptr<Cohesion> pCohesionBehavior{};
-	//std::unique_ptr<VelocityMatch> pVelMatchBehavior{};
-	// std::unique_ptr<Seek> pSeekBehavior{};
-	// std::unique_ptr<Wander> pWanderBehavior{};
-	// std::unique_ptr<Evade> pEvadeBehavior{};
+	std::unique_ptr<VelocityMatch> pVelMatchBehavior{};
+	std::unique_ptr<Seek> pSeekBehavior{};
+	std::unique_ptr<Wander> pWanderBehavior{};
+	std::unique_ptr<Evade> pEvadeBehavior{};
 	
 	std::unique_ptr<BlendedSteering> pBlendedSteering{};
 	std::unique_ptr<PrioritySteering> pPrioritySteering{};
 	// weight
-	float cohesionWeight {0.2f};
+	float CohesionWeight {0.2f};
+	float SeparationWeight {0.2f};
+	float VelocityMatchWeight {0.3f};
+	float SeekWeight {0.1f};
+	float WanderWeight {0.1f};
+	
 	// UI and rendering
 	bool DebugRenderSteering{false};
 	bool DebugRenderNeighborhood{true};
 	bool DebugRenderPartitions{true};
 
-	void RenderNeighborhood();
+
+
 };
