@@ -66,8 +66,11 @@ public:
 	Arrive() = default;
 	virtual ~Arrive() override = default;
 	virtual SteeringOutput CalculateSteering(float DeltaT, ASteeringAgent & Agent) override;
+	void SetTargetRadius(float targetRadius);
 private:
 	float OriginalMaxSpeed {1000.f};
+	float FastRadius {500.f};
+	float SlowRadius {100.f};
 };
 class Face final :public ISteeringBehavior
 {

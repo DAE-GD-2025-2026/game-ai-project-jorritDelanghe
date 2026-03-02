@@ -33,10 +33,9 @@ namespace GameAI
 
 	inline Eulerianity EulerianPath::IsEulerian() const
 	{
-		// TODO If the graph is not connected, there can be no Eulerian Trail
-
+		
 		// TODO Count nodes with odd degree 
-
+		
 		// TODO A connected graph with more than 2 nodes with an odd degree (an odd amount of connections) is not Eulerian
 
 		// TODO A connected graph with exactly 2 nodes with an odd degree is Semi-Eulerian (unless there are only 2 nodes)
@@ -44,7 +43,11 @@ namespace GameAI
 
 		// TODO A connected graph with no odd nodes is Eulerian
 		
-		return Eulerianity::notEulerian;
+		// if (IsConnected() == Eulerianity::notEulerian)
+		// {
+		// 	return Eulerianity::notEulerian;
+		// 	
+		// }
 	}
 
 	inline std::vector<Node*> EulerianPath::FindPath(Eulerianity& eulerianity) const

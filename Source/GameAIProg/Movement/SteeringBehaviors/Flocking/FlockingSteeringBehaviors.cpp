@@ -19,7 +19,8 @@ SteeringOutput Cohesion::CalculateSteering(float deltaT, ASteeringAgent& pAgent)
 	
 	if (distance < epsilon) return output;
 	
-	output.LinearVelocity = toAveragePos.Normalize() * pAgent.GetMaxLinearSpeed();
+	toAveragePos.Normalize();
+	output.LinearVelocity = toAveragePos * pAgent.GetMaxLinearSpeed();
 	output.IsValid = true;
 	return output;
 }

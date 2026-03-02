@@ -14,11 +14,11 @@ Flock::Flock(
 	, FlockSize{ FlockSize }
 	, pAgentToEvade{pAgentToEvade}
 {
-	Agents.SetNum(FlockSize);
-	pCohesionBehavior = std::make_unique<Cohesion>(this);
-	pBlendedSteering = std::make_unique< BlendedSteering>(
-	{pCohesionBehavior,cohesionWeight
-	});
+	// Agents.SetNum(FlockSize);
+	// pCohesionBehavior = std::make_unique<Cohesion>(this);
+	// pBlendedSteering = std::make_unique< BlendedSteering>(
+	// {pCohesionBehavior,cohesionWeight
+	// });
 
 }
 

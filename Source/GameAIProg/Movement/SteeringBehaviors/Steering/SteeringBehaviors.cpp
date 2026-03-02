@@ -95,21 +95,19 @@ SteeringOutput Flee::CalculateSteering(float DeltaT, ASteeringAgent& Agent) //fl
 
 SteeringOutput Arrive::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 {
-	constexpr float slowRadius{ 100.f};
-	constexpr float fastRadius{ 500.f};
 	const FVector2D toTarget{Target.Position - Agent.GetPosition()};
 	const double distance {toTarget.Length()};
 
 	SteeringOutput steering{};
 	
-	if (distance<slowRadius ) //stop and reset speed
+	if (distance<SlowRadius ) //stop and reset speed
 	{
 		steering.LinearVelocity = FVector2D::ZeroVector;
 		Agent.SetMaxLinearSpeed(OriginalMaxSpeed);
 	}
-	else if (distance<fastRadius)
+	else if (distance<FastRadius)
 	{
-		const double speedRatio{(distance - slowRadius) / (fastRadius - slowRadius)};
+		const double speedRatio{(distance - SlowRadius) / (FastRadius - SlowRadius)};
 		Agent.SetMaxLinearSpeed (OriginalMaxSpeed * speedRatio);
 		steering.LinearVelocity = toTarget*Agent.GetMaxLinearSpeed();
 	}
@@ -126,17 +124,23 @@ SteeringOutput Arrive::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 			,FVector{Target.Position,0.f},FColor::Red,false,0,1.f);
 		
 		//big circle
-		DrawDebugCircle(Agent.GetWorld(),FVector{Agent.GetPosition(),0.f},fastRadius
+		DrawDebugCircle(Agent.GetWorld(),FVector{Agent.GetPosition(),0.f},FastRadius
 			,100,FColor::Blue,false,-1,0,1.f
 			, FVector(1, 0, 0), FVector(0, 1, 0), true);
 		
 		//small circle
-		DrawDebugCircle(Agent.GetWorld(),FVector{Agent.GetPosition(),0.f},slowRadius
+		DrawDebugCircle(Agent.GetWorld(),FVector{Agent.GetPosition(),0.f},SlowRadius
 		,100,FColor::Green,false,-1,0,1.f
 		, FVector(1, 0, 0), FVector(0, 1, 0), true);
 		
 	}
 	return steering;
+}
+
+void Arrive::SetTargetRadius(float targetRadius)
+{
+	SlowRadius = targetRadius;
+	FastRadius = targetRadius*5.f;
 }
 
 SteeringOutput Face::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
