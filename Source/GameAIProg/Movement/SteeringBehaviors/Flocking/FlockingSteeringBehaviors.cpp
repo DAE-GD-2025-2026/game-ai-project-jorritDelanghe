@@ -30,3 +30,15 @@ SteeringOutput Cohesion::CalculateSteering(float deltaT, ASteeringAgent& pAgent)
 
 //*************************
 //VELOCITY MATCH (FLOCKING)
+SteeringOutput VelocityMatch::CalculateSteering(float deltaT,ASteeringAgent& pAgent)
+{
+	SteeringOutput output{};
+	
+	FVector2D  averageVelocity = m_pFlock->GetAverageNeighborVelocity();
+	if ( averageVelocity.IsZero()) return output;
+	
+	 averageVelocity.Normalize();
+	output =  averageVelocity*pAgent.GetMaxLinearSpeed();
+	output.IsValid = true;
+	return output;
+}
