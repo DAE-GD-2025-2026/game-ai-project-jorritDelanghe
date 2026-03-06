@@ -9,16 +9,13 @@
 SteeringOutput Cohesion::CalculateSteering(float deltaT, ASteeringAgent& pAgent)
 {
 	SteeringOutput output{};
-	if (m_pFlock->GetNrOfNeighbors() == 0) return output; 
-	FVector2D averagePos =  m_pFlock->GetAverageNeighborPos();
-	FVector2D toAveragePos = averagePos - pAgent.GetPosition();
-	const float epsilon = 0.001f;
-	
 	if (m_pFlock->GetNrOfNeighbors() == 0) return output;
+	const FVector2D averagePos =  m_pFlock->GetAverageNeighborPos();
+	FVector2D toAveragePos = averagePos - pAgent.GetPosition();
 	
 	float distance = (averagePos - pAgent.GetPosition()).Length();
 	
-	if (distance < epsilon) return output;
+	if (constexpr float epsilon = 0.001f; distance < epsilon) return output;
 	
 	toAveragePos.Normalize();
 	output.LinearVelocity = toAveragePos * pAgent.GetMaxLinearSpeed();
@@ -68,7 +65,7 @@ SteeringOutput VelocityMatch::CalculateSteering(float deltaT,ASteeringAgent& pAg
 	if ( averageVelocity.IsZero()) return output;
 	
 	 averageVelocity.Normalize();
-	output =  averageVelocity*pAgent.GetMaxLinearSpeed();
+	output.LinearVelocity =  averageVelocity*pAgent.GetMaxLinearSpeed();
 	output.IsValid = true;
 	return output;
 }
