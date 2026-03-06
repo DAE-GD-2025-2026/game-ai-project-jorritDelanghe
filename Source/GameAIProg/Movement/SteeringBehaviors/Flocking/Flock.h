@@ -31,6 +31,7 @@ public:
 	
 	void RenderDebug();
 	void ImGuiRender(ImVec2 const& WindowPos, ImVec2 const& WindowSize);
+	float GetWorldSize() const { return WorldSize; }
 
 #ifdef GAMEAI_USE_SPACE_PARTITIONING
 	//const TArray<ASteeringAgent*>& GetNeighbors() const { return pPartitionedSpace->GetNeighbors(); }
@@ -61,7 +62,7 @@ private:
 	TArray<ASteeringAgent*> Neighbors{};
 #endif // USE_SPACE_PARTITIONING
 	
-	float NeighborhoodRadius{200.f};
+	float NeighborhoodRadius{300.f};
 	int NrOfNeighbors{0};
 
 	ASteeringAgent* pAgentToEvade{nullptr};
@@ -77,10 +78,10 @@ private:
 	std::unique_ptr<BlendedSteering> pBlendedSteering{};
 	std::unique_ptr<PrioritySteering> pPrioritySteering{};
 	// weight
-	float CohesionWeight {0.2f};
-	float SeparationWeight {0.2f};
+	float CohesionWeight {0.4f};
+	float SeparationWeight {0.3f};
 	float VelocityMatchWeight {0.3f};
-	float SeekWeight {0.1f};
+	float SeekWeight {0.05f};
 	float WanderWeight {0.1f};
 	
 	// UI and rendering
