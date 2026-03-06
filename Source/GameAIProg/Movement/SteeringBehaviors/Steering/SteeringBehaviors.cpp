@@ -216,7 +216,7 @@ SteeringOutput Evade::CalculateSteering(float DeltaT, ASteeringAgent& Agent)
 	const double distance {directionToTarget.Length()};
 	const double timeToTarget { distance/Agent.GetMaxLinearSpeed()};
 	const FVector2D futurePosition {Target.Position + timeToTarget * Target.LinearVelocity};
-	const float maxDistance{1000.f};
+	const float maxDistance{400.f};
 	
 	if (distance>maxDistance) //set evade on zero if far enough from the object
 	{

@@ -23,7 +23,7 @@ public:
 
 protected:
 	FTargetData Target;
-	bool IsDebugging{true};
+	bool IsDebugging{false};
 	
 };
 
