@@ -107,10 +107,6 @@ void Flock::Tick(float DeltaTime)
 		OldPositions[i] = agent->GetPosition();
 	 #endif
 	}
- // TODO: for every agent:
-  // TODO: register the neighbors for this agent (-> fill the memory pool with the neighbors for the currently evaluated agent)
-  // TODO: update the agent (-> the steeringbehaviors use the neighbors in the memory pool)
-  // TODO: trim the agent to the world
 }
 
 void Flock::RenderDebug()
@@ -143,7 +139,9 @@ void Flock::RenderDebug()
 	DrawDebugLine(pWorld, FVector( WorldSize, -WorldSize, 0), FVector( WorldSize,  WorldSize, 0), FColor::Red, false, -1.f, 0, 5.f);
 	DrawDebugLine(pWorld, FVector( WorldSize,  WorldSize, 0), FVector(-WorldSize,  WorldSize, 0), FColor::Red, false, -1.f, 0, 5.f);
 	DrawDebugLine(pWorld, FVector(-WorldSize,  WorldSize, 0), FVector(-WorldSize, -WorldSize, 0), FColor::Red, false, -1.f, 0, 5.f);
-	
+#ifdef GAMEAI_USE_SPACE_PARTITIONING
+	pPartitionedSpace->RenderCells();
+#endif
 }
 
 void Flock::ImGuiRender(ImVec2 const& WindowPos, ImVec2 const& WindowSize)
@@ -205,9 +203,24 @@ void Flock::ImGuiRender(ImVec2 const& WindowPos, ImVec2 const& WindowSize)
 			behaviors[3].Weight = SeekWeight;
 			behaviors[4].Weight = WanderWeight;
 		}
+		//grid size
 		ImGuiHelpers::ImGuiSliderFloatWithSetter("World Size",
 	WorldSize, 1000.f, 5000.f,
 	[this](float InVal) { WorldSize = InVal; });
+		
+#ifdef GAMEAI_USE_SPACE_PARTITIONING
+		// Rebuild the grid with the new world size
+		pPartitionedSpace = std::make_unique<CellSpace>(
+			pWorld, 2.f * WorldSize, 2.f * WorldSize, NrOfCellsX, NrOfCellsX, FlockSize);
+        
+		// Re-add all agents to the new grid
+		OldPositions.Reset();
+		for (auto agent : Agents)
+		{
+			pPartitionedSpace->AddAgent(*agent);
+			OldPositions.Add(agent->GetPosition());
+		}
+#endif
 		//End
 		ImGui::End();
 	}

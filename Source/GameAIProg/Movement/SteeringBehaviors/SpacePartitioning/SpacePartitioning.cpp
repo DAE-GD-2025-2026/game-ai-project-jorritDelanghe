@@ -111,18 +111,18 @@ void CellSpace::EmptyCells()
 void CellSpace::RenderCells() const
 {
 	//color grid
-	 for (int index{} ; index<NrOfCols;++index)
+	 for (int index{} ; index<=NrOfCols;++index)
 	 {
  		DrawDebugLine(pWorld, 
- 			FVector(CellWidth*index, 0.f, 0.f)
- 			, FVector( CellWidth*index,SpaceHeight, 0)
+ 			FVector(  CellOrigin.X+CellWidth*index, CellOrigin.Y, 0.f)
+ 			, FVector(   CellOrigin.X+CellWidth*index,CellOrigin.Y+SpaceHeight, 0)
  			, FColor::Red, false, -1.f, 0, 5.f);
 	 }
-	for (int index{} ; index<NrOfRows;++index)
+	for (int index{} ; index<=NrOfRows;++index)
 	{
 		DrawDebugLine(pWorld, 
-			FVector(0.f, CellHeight*index, 0.f)
-			, FVector( SpaceWidth,CellHeight*index, 0)
+			FVector(CellOrigin.X,  CellOrigin.Y+CellHeight*index, 0.f)
+			, FVector( CellOrigin.X+SpaceWidth, CellOrigin.Y+CellHeight*index, 0)
 			, FColor::Red, false, -1.f, 0, 5.f);
 	}
 	//color the used cells blue
@@ -130,16 +130,18 @@ void CellSpace::RenderCells() const
 	{
 		if (!cell.Agents.empty())
 		{
-			constexpr float thickness{2.f};
-			const FVector a{ cell.BoundingBox.Min.X, cell.BoundingBox.Min.Y, 0.f };
-			const FVector b{ cell.BoundingBox.Max.X, cell.BoundingBox.Min.Y, 0.f };
-			const FVector c{ cell.BoundingBox.Max.X, cell.BoundingBox.Max.Y, 0.f };
-			const FVector d{ cell.BoundingBox.Min.X, cell.BoundingBox.Max.Y, 0.f };
-
-			DrawDebugLine(pWorld, a, b,  FColor::Green, false, -1.f, 0, thickness);
-			DrawDebugLine(pWorld, b, c,  FColor::Green, false, -1.f, 0, thickness);
-			DrawDebugLine(pWorld, c, d,  FColor::Green, false, -1.f, 0, thickness);
-			DrawDebugLine(pWorld, d, a,  FColor::Green, false, -1.f, 0, thickness);
+			constexpr float thickness{10.f};
+			FVector center{
+				(cell.BoundingBox.Min.X + cell.BoundingBox.Max.X) / 2.f,
+				(cell.BoundingBox.Min.Y + cell.BoundingBox.Max.Y) / 2.f,
+				0.f
+			};
+			FVector halfExtent{
+				CellWidth  / 2.f,
+				CellHeight / 2.f,
+				1.f
+			};
+			DrawDebugBox(pWorld, center, halfExtent, FColor::Cyan, false, -1.f, 0, thickness);
 		}
 	}
 }
