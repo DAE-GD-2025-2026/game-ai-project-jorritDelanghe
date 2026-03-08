@@ -23,6 +23,14 @@ SteeringOutput Cohesion::CalculateSteering(float deltaT, ASteeringAgent& pAgent)
 	return output;
 }
 
+void Cohesion::DebugRender(UWorld* pWorld, ASteeringAgent& agent)
+{
+	if (m_pFlock->GetNrOfNeighbors() == 0) return;
+	FVector avgPos = FVector(m_pFlock->GetAverageNeighborPos(), 0.f);
+	FVector from = FVector(agent.GetPosition(), 0.f);
+	DrawDebugDirectionalArrow(pWorld, from, avgPos, 10.f, FColor::Blue, false, -1.f, 0, 2.f);
+}
+
 //*********************
 //SEPARATION (FLOCKING)
 SteeringOutput Separation::CalculateSteering(float deltaT, ASteeringAgent& pAgent)
@@ -55,6 +63,16 @@ SteeringOutput Separation::CalculateSteering(float deltaT, ASteeringAgent& pAgen
 	}
 	return output;
 }
+
+void Separation::DebugRender(UWorld* pWorld, ASteeringAgent& agent)
+{
+	SteeringOutput out = CalculateSteering(0.f, agent); // or cache last output
+	FVector from = FVector(agent.GetPosition(), 0.f);
+	FVector to = from + FVector(out.LinearVelocity, 0.f) * 0.5f;
+	DrawDebugDirectionalArrow(pWorld, from, to, 10.f, FColor::Red, false, -1.f, 0, 2.f);
+
+}
+
 //*************************
 //VELOCITY MATCH (FLOCKING)
 SteeringOutput VelocityMatch::CalculateSteering(float deltaT,ASteeringAgent& pAgent)
@@ -68,4 +86,15 @@ SteeringOutput VelocityMatch::CalculateSteering(float deltaT,ASteeringAgent& pAg
 	output.LinearVelocity =  averageVelocity*pAgent.GetMaxLinearSpeed();
 	output.IsValid = true;
 	return output;
+}
+
+void VelocityMatch::DebugRender(UWorld* pWorld, ASteeringAgent& agent)
+{
+	FVector2D avgVel = m_pFlock->GetAverageNeighborVelocity();
+	if (avgVel.IsZero()) return;
+	
+	FVector from = FVector(agent.GetPosition(), 0.f);
+	FVector to = from + FVector(avgVel * 80.f, 0.f); // 80 = visual scale
+
+	DrawDebugDirectionalArrow(pWorld, from, to, 10.f, FColor::Cyan, false, -1.f, 0, 2.f);
 }

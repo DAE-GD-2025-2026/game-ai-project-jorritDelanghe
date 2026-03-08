@@ -16,7 +16,7 @@ ALevel_Flocking::ALevel_Flocking()
 void ALevel_Flocking::BeginPlay()
 {
 	Super::BeginPlay();
-	pAgentToEvade = GetWorld()->SpawnActor<ASteeringAgent>( SteeringAgentClass, FTransform(FVector(200.f, 200.f, 0)));
+	pAgentToEvade = GetWorld()->SpawnActor<ASteeringAgent>( SteeringAgentClass, FTransform(FVector(800.f, 800.f, 0)));
 	pSeekBehavior = std::make_unique<Seek>();
 	pAgentToEvade->SetSteeringBehavior(pSeekBehavior.get());
 	

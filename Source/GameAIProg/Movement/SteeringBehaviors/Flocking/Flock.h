@@ -63,7 +63,7 @@ private:
 	TArray<ASteeringAgent*> Neighbors{};
 #endif // USE_SPACE_PARTITIONING
 	
-	float NeighborhoodRadius{500.f};
+	float NeighborhoodRadius{400.f};
 	int NrOfNeighbors{0};
 
 	ASteeringAgent* pAgentToEvade{nullptr};
@@ -79,14 +79,14 @@ private:
 	std::unique_ptr<BlendedSteering> pBlendedSteering{};
 	std::unique_ptr<PrioritySteering> pPrioritySteering{};
 	// weight
-	float CohesionWeight {0.5f};
-	float SeparationWeight {0.4f};
-	float VelocityMatchWeight {0.5f};
-	float SeekWeight {0.0f};
-	float WanderWeight {0.05f};
+	float CohesionWeight {0.4f};
+	float SeparationWeight {0.35f};
+	float VelocityMatchWeight {0.4f};
+	float SeekWeight {0.01f};
+	float WanderWeight {0.2f};
 	
 	// UI and rendering
-	bool DebugRenderSteering{false};
+	bool DebugRenderSteering{true};
 	bool DebugRenderNeighborhood{true};
 	bool DebugRenderPartitions{true};
 

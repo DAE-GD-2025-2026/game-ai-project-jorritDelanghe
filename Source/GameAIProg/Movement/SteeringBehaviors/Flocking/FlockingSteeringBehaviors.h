@@ -11,6 +11,7 @@ public:
 
 	//Cohesion Behavior
 	virtual SteeringOutput CalculateSteering(float deltaT, ASteeringAgent& pAgent) override;
+	void DebugRender(UWorld* pWorld, ASteeringAgent& agent);
 
 private:
 	Flock* m_pFlock = nullptr;
@@ -25,6 +26,7 @@ class Separation final: public  ISteeringBehavior
 	
 	//Separation Behavior
 	virtual SteeringOutput CalculateSteering(float deltaT, ASteeringAgent& pAgent) override;
+	void DebugRender(UWorld* pWorld, ASteeringAgent& agent);
 	
 private:
 	Flock* m_pFlock{nullptr};
@@ -37,6 +39,7 @@ class VelocityMatch final: public ISteeringBehavior
 	public:
 	explicit VelocityMatch(Flock*const pFlock):m_pFlock(pFlock) {};
 	virtual SteeringOutput CalculateSteering(float deltaT,ASteeringAgent& pAgent)override;
+	void DebugRender(UWorld* pWorld, ASteeringAgent& agent);
 private:
 	Flock*m_pFlock {nullptr};
 };

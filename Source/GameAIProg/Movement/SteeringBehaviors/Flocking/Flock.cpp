@@ -112,34 +112,39 @@ void Flock::Tick(float DeltaTime)
 void Flock::RenderDebug()
 {
 	if (Agents.IsEmpty()) return;
-	constexpr float radiusNeighbours{70.f};
-    
-	// Re-register specifically for first agent
-	RegisterNeighbors(Agents[0]);
-    
-	FVector pos = Agents[0]->GetActorLocation();
-    
-	// Draw neighborhood radius for first agent
-	DrawDebugCircle(pWorld, pos, NeighborhoodRadius, 32, FColor::Green,
-		false, -1.f, 0, 3.f, FVector::ForwardVector, FVector::RightVector);
-
-	// Draw lines to each neighbor of first agent only
-	for (int i = 0; i < GetNrOfNeighbors(); ++i)
+	if (DebugRenderSteering&&!Agents.IsEmpty())
 	{
-		DrawDebugLine(
-			pWorld,
-			pos,
-			FVector{GetNeighbors()[i]->GetPosition(),0.f},
-			FColor::Cyan, false, -1.f, 0, 1.f);
-		DrawDebugCircle(pWorld, FVector{GetNeighbors()[i]->GetPosition(),0.f}, radiusNeighbours, 32, FColor::Green,
-		false, -1.f, 0, 3.f, FVector::ForwardVector, FVector::RightVector);
+		pSeparationBehavior->DebugRender(pWorld, *Agents[0]);
+		pCohesionBehavior->DebugRender(pWorld, *Agents[0]);
+		pVelMatchBehavior->DebugRender(pWorld, *Agents[0]);
 	}
-	// Draw world borders
-	DrawDebugLine(pWorld, FVector(-WorldSize, -WorldSize, 0), FVector( WorldSize, -WorldSize, 0), FColor::Red, false, -1.f, 0, 5.f);
-	DrawDebugLine(pWorld, FVector( WorldSize, -WorldSize, 0), FVector( WorldSize,  WorldSize, 0), FColor::Red, false, -1.f, 0, 5.f);
-	DrawDebugLine(pWorld, FVector( WorldSize,  WorldSize, 0), FVector(-WorldSize,  WorldSize, 0), FColor::Red, false, -1.f, 0, 5.f);
-	DrawDebugLine(pWorld, FVector(-WorldSize,  WorldSize, 0), FVector(-WorldSize, -WorldSize, 0), FColor::Red, false, -1.f, 0, 5.f);
+	if (DebugRenderNeighborhood)
+	{
+		constexpr float radiusNeighbours{70.f};
+	
+		RegisterNeighbors(Agents[0]);
+		FVector pos = FVector{Agents[0]->GetPosition(),0.f};
+    
+		// Draw neighborhood radius for first agent
+		DrawDebugCircle(pWorld, pos, NeighborhoodRadius, 32, FColor::Green,
+			false, -1.f, 0, 3.f, FVector::ForwardVector, FVector::RightVector);
+		DrawDebugCircle(pWorld, pos, radiusNeighbours, 32, FColor::Yellow,
+			false, -1.f, 0, 15.f, FVector::ForwardVector, FVector::RightVector);
+
+		// Draw circle to around neighbor of first agent 
+		for (int i = 0; i < GetNrOfNeighbors(); ++i)
+		{
+			DrawDebugCircle(pWorld, FVector{GetNeighbors()[i]->GetPosition(),0.f}, radiusNeighbours, 32, FColor::Green,
+			false, -1.f, 0, 3.f, FVector::ForwardVector, FVector::RightVector);
+		}
+		// Draw world borders
+		DrawDebugLine(pWorld, FVector(-WorldSize, -WorldSize, 0), FVector( WorldSize, -WorldSize, 0), FColor::Red, false, -1.f, 0, 5.f);
+		DrawDebugLine(pWorld, FVector( WorldSize, -WorldSize, 0), FVector( WorldSize,  WorldSize, 0), FColor::Red, false, -1.f, 0, 5.f);
+		DrawDebugLine(pWorld, FVector( WorldSize,  WorldSize, 0), FVector(-WorldSize,  WorldSize, 0), FColor::Red, false, -1.f, 0, 5.f);
+		DrawDebugLine(pWorld, FVector(-WorldSize,  WorldSize, 0), FVector(-WorldSize, -WorldSize, 0), FColor::Red, false, -1.f, 0, 5.f);
+	}
 #ifdef GAMEAI_USE_SPACE_PARTITIONING
+	if (DebugRenderPartitions)
 	pPartitionedSpace->RenderCells();
 #endif
 }
@@ -184,6 +189,7 @@ void Flock::ImGuiRender(ImVec2 const& WindowPos, ImVec2 const& WindowSize)
 
         //checkboxes for debug rendering
 		ImGui::Checkbox("Show Steering behaviours" ,&DebugRenderSteering);
+		ImGui::Checkbox("Debug render neighborhood", &DebugRenderNeighborhood);
 		ImGui::Checkbox("Show Partitions",&DebugRenderPartitions);
 
 		ImGui::Text("Behavior Weights");
@@ -205,22 +211,22 @@ void Flock::ImGuiRender(ImVec2 const& WindowPos, ImVec2 const& WindowSize)
 		}
 		//grid size
 		ImGuiHelpers::ImGuiSliderFloatWithSetter("World Size",
-	WorldSize, 1000.f, 5000.f,
-	[this](float InVal) { WorldSize = InVal; });
-		
-#ifdef GAMEAI_USE_SPACE_PARTITIONING
-		// Rebuild the grid with the new world size
-		pPartitionedSpace = std::make_unique<CellSpace>(
-			pWorld, 2.f * WorldSize, 2.f * WorldSize, NrOfCellsX, NrOfCellsX, FlockSize);
-        
-		// Re-add all agents to the new grid
-		OldPositions.Reset();
-		for (auto agent : Agents)
-		{
-			pPartitionedSpace->AddAgent(*agent);
-			OldPositions.Add(agent->GetPosition());
-		}
-#endif
+		WorldSize, 1000.f, 5000.f,
+	  [this](float InVal)
+	  {
+		  WorldSize = InVal;
+		#ifdef GAMEAI_USE_SPACE_PARTITIONING
+		  // Only rebuild when the value changes
+		  pPartitionedSpace = std::make_unique<CellSpace>(
+			  pWorld, 2.f * WorldSize, 2.f * WorldSize, NrOfCellsX, NrOfCellsX, FlockSize);
+		  OldPositions.Reset();
+		  for (auto agent : Agents)
+		  {
+			  pPartitionedSpace->AddAgent(*agent);
+			  OldPositions.Add(agent->GetPosition());
+		  }
+		#endif
+	  });
 		//End
 		ImGui::End();
 	}
@@ -299,9 +305,6 @@ void Flock::SetTarget_Seek(FSteeringParams const& Target)
 	if (pSeekBehavior)
 	{
 		pSeekBehavior->SetTarget(Target);
-		auto& behaviors = pBlendedSteering->GetWeightedBehaviorsRef();
-		behaviors[3].Weight = SeekWeight > 0.f ? SeekWeight : 0.1f;
-		
 	}
 }
 
