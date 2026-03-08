@@ -42,7 +42,17 @@ CellSpace::CellSpace(UWorld* pWorld, float Width, float Height, int Rows, int Co
 	CellWidth = Width / Cols;
 	CellHeight = Height / Rows;
 
-	// TODO create the cells
+	CellOrigin = {-Width/2.f, -Height/2.f};
+	
+	for (int row{};row<Rows;++row)
+	{
+		for (int col {}; col<Cols;++col)
+		{
+			float left = CellOrigin.X + CellWidth*col;
+			float bottom = CellOrigin.Y + CellHeight*row;
+			Cells.emplace_back(left, bottom, CellWidth, CellHeight);
+		}
+	}
 }
 
 void CellSpace::AddAgent(ASteeringAgent& Agent)
@@ -136,8 +146,12 @@ void CellSpace::RenderCells() const
 
 int CellSpace::PositionToIndex(FVector2D const & Pos) const
 {
-	const int col = static_cast<int>(Pos.X/CellWidth);
-	const int row = static_cast<int>(Pos.Y/CellHeight);
+	 int col = static_cast<int>((Pos.X - CellOrigin.X)/CellWidth);
+	 int row = static_cast<int>((Pos.Y - CellOrigin.Y)/CellHeight);
+	
+	//agents on the edge
+	col = FMath::Clamp(col, 0, NrOfCols - 1);
+	row = FMath::Clamp(row, 0, NrOfRows - 1);
 	return row*NrOfCols+col;
 }
 
