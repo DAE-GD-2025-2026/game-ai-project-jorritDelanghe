@@ -45,7 +45,7 @@ namespace GameAI
 		
 		// if (IsConnected() == Eulerianity::notEulerian)
 		// {
-		// 	return Eulerianity::notEulerian;
+		return Eulerianity::notEulerian;
 		// 	
 		// }
 	}

@@ -56,7 +56,9 @@ Flock::Flock(
 	
 	for (auto agent:Agents)
 		agent->SetSteeringBehavior(pPrioritySteering.get());
-#ifdef GAMEAI_USE_SPACE_PARTITIONING
+	
+	Neighbors.Reserve(FlockSize);
+	
 	pPartitionedSpace =std::make_unique<CellSpace>(
 		pWorld,2.f*WorldSize,2.f*WorldSize,NrOfCellsX,NrOfCellsX,FlockSize);
 	
@@ -66,10 +68,6 @@ Flock::Flock(
 		pPartitionedSpace->AddAgent(*agent);
 		OldPositions.Add(agent->GetPosition());
 	}
-	
-#else
-	Neighbors.Reserve(FlockSize);
-#endif
 }
 
 Flock::~Flock()
@@ -86,10 +84,7 @@ void Flock::Tick(float DeltaTime)
 	for (int i = 0; i < Agents.Num(); ++i)
 	{
 		ASteeringAgent* agent = Agents[i];
-		
-	 #ifdef GAMEAI_USE_SPACE_PARTITIONING
 		const FVector2D oldPos { OldPositions[i]};
-	 #endif
 		
 		RegisterNeighbors(agent); 
 		agent->Tick(DeltaTime);
@@ -102,10 +97,12 @@ void Flock::Tick(float DeltaTime)
 		if (pos.Y >  WorldSize) { pos.Y = -WorldSize; bTrimmed = true; }
 		if (pos.Y < -WorldSize) { pos.Y =  WorldSize; bTrimmed = true; }
 		if (bTrimmed) agent->SetActorLocation(pos);
-	 #ifdef GAMEAI_USE_SPACE_PARTITIONING
-		pPartitionedSpace->UpdateAgentCell(*agent,oldPos);
-		OldPositions[i] = agent->GetPosition();
-	 #endif
+		
+		if (bUseSpacePartitioning)
+		{
+			pPartitionedSpace->UpdateAgentCell(*agent, oldPos);
+			OldPositions[i] = agent->GetPosition();
+		}
 	}
 }
 
@@ -143,10 +140,8 @@ void Flock::RenderDebug()
 		DrawDebugLine(pWorld, FVector( WorldSize,  WorldSize, 0), FVector(-WorldSize,  WorldSize, 0), FColor::Red, false, -1.f, 0, 5.f);
 		DrawDebugLine(pWorld, FVector(-WorldSize,  WorldSize, 0), FVector(-WorldSize, -WorldSize, 0), FColor::Red, false, -1.f, 0, 5.f);
 	}
-#ifdef GAMEAI_USE_SPACE_PARTITIONING
-	if (DebugRenderPartitions)
-	pPartitionedSpace->RenderCells();
-#endif
+	if (DebugRenderPartitions && bUseSpacePartitioning)
+		pPartitionedSpace->RenderCells();
 }
 
 void Flock::ImGuiRender(ImVec2 const& WindowPos, ImVec2 const& WindowSize)
@@ -190,7 +185,8 @@ void Flock::ImGuiRender(ImVec2 const& WindowPos, ImVec2 const& WindowSize)
         //checkboxes for debug rendering
 		ImGui::Checkbox("Show Steering behaviours" ,&DebugRenderSteering);
 		ImGui::Checkbox("Debug render neighborhood", &DebugRenderNeighborhood);
-		ImGui::Checkbox("Show Partitions",&DebugRenderPartitions);
+		ImGui::Checkbox("Debug render Partitions",&DebugRenderPartitions);
+		ImGui::Checkbox("Use Space Partitioning", &bUseSpacePartitioning);
 
 		ImGui::Text("Behavior Weights");
 		ImGui::Spacing();
@@ -215,7 +211,6 @@ void Flock::ImGuiRender(ImVec2 const& WindowPos, ImVec2 const& WindowSize)
 	  [this](float InVal)
 	  {
 		  WorldSize = InVal;
-		#ifdef GAMEAI_USE_SPACE_PARTITIONING
 		  // Only rebuild when the value changes
 		  pPartitionedSpace = std::make_unique<CellSpace>(
 			  pWorld, 2.f * WorldSize, 2.f * WorldSize, NrOfCellsX, NrOfCellsX, FlockSize);
@@ -225,7 +220,6 @@ void Flock::ImGuiRender(ImVec2 const& WindowPos, ImVec2 const& WindowSize)
 			  pPartitionedSpace->AddAgent(*agent);
 			  OldPositions.Add(agent->GetPosition());
 		  }
-		#endif
 	  });
 		//End
 		ImGui::End();
@@ -233,46 +227,47 @@ void Flock::ImGuiRender(ImVec2 const& WindowPos, ImVec2 const& WindowSize)
 #pragma endregion
 #endif
 }
-#ifdef GAMEAI_USE_SPACE_PARTITIONING
-void Flock::RegisterNeighbors(ASteeringAgent* const pAgent)
+const TArray<ASteeringAgent*>& Flock::GetNeighbors() const
 {
-	pPartitionedSpace->RegisterNeighbors(*pAgent,NeighborhoodRadius);
+	return bUseSpacePartitioning ? pPartitionedSpace->GetNeighbors() : Neighbors;
 }
-#endif
 
-#ifndef GAMEAI_USE_SPACE_PARTITIONING
 void Flock::RegisterNeighbors(ASteeringAgent* const pAgent)
 {
-	float distanceSqr{};
-	const float neighbourHoodRadiusSqr{NeighborhoodRadius * NeighborhoodRadius}; //avoids squareRoot
-	NrOfNeighbors = 0;
-	
-	for (const auto& agent: Agents)
+	if (bUseSpacePartitioning)
 	{
-		if (pAgent != agent)
+		pPartitionedSpace->RegisterNeighbors(*pAgent, NeighborhoodRadius);
+	}
+	else
+	{
+		NrOfNeighbors = 0;
+		const float radiusSqr{NeighborhoodRadius * NeighborhoodRadius};
+
+		for (const auto& agent : Agents)
 		{
-			distanceSqr = (agent->GetPosition() - pAgent->GetPosition()).SquaredLength();//avoids squareRoot calculation
-				
-			if(distanceSqr <= neighbourHoodRadiusSqr)
+			if (pAgent != agent)
 			{
-				if (NrOfNeighbors<Neighbors.Num())
+				if ((agent->GetPosition() - pAgent->GetPosition()).SquaredLength() <= radiusSqr)
 				{
-					Neighbors[NrOfNeighbors] = agent;
-				}
-				else
-				{
-					Neighbors.Add(agent); 
-				}
+					if (NrOfNeighbors < Neighbors.Num())
+						Neighbors[NrOfNeighbors] = agent;
+					else
+						Neighbors.Add(agent);
 					++NrOfNeighbors;
+				}
 			}
 		}
 	}
 }
-#endif
+
+int Flock::GetNrOfNeighbors() const
+{
+	return bUseSpacePartitioning ? pPartitionedSpace->GetNrOfNeighbors() : NrOfNeighbors;
+}
 
 FVector2D Flock::GetAverageNeighborPos() const
 {
-	if (NrOfNeighbors == 0) return FVector2D::ZeroVector;
+	if (GetNrOfNeighbors() == 0) return FVector2D::ZeroVector;
 	FVector2D avgPosition {FVector2D::ZeroVector};
 	FVector2D totalPosition {FVector2D::ZeroVector};
 
@@ -287,7 +282,7 @@ FVector2D Flock::GetAverageNeighborPos() const
 
 FVector2D Flock::GetAverageNeighborVelocity() const
 {
-	if (NrOfNeighbors == 0) return FVector2D::ZeroVector;
+	if (GetNrOfNeighbors() == 0) return FVector2D::ZeroVector;
 	FVector2D avgVelocity {FVector2D::ZeroVector};
 	FVector2D totalVelocity {FVector2D::ZeroVector};
 
