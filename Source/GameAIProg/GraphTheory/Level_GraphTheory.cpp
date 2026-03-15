@@ -19,6 +19,7 @@ ALevel_GraphTheory::ALevel_GraphTheory()
 void ALevel_GraphTheory::BeginPlay()
 {
 	Super::BeginPlay();
+	Renderer = GameAI::GraphRenderer(GetWorld());
 	
 	// Add the graph editor to our player
 	if (PlayerController = Cast<APlayerController>(GetWorld()->GetFirstLocalPlayerFromController()->PlayerController); 
@@ -39,9 +40,14 @@ void ALevel_GraphTheory::BeginPlay()
 	if (AGameAISpectator* Player = Cast<AGameAISpectator>(PlayerController->GetPawnOrSpectator()); Player)
 	{
 		Player->SetCameraProjection(ECameraProjectionMode::Orthographic);
-	}
-	
-	// TODO Make the graph and a couple connected nodes here...
+	}	
+	int idA = Graph.AddNode(std::make_unique<GameAI::Node>(FVector2D{-200.f, 0.f}));
+	int idB = Graph.AddNode(std::make_unique<GameAI::Node>(FVector2D{0.f, 200.f}));
+	int idC = Graph.AddNode(std::make_unique<GameAI::Node>(FVector2D{200.f, 0.f}));
+
+	Graph.AddConnection(idA, idB);  
+	Graph.AddConnection(idB, idC);   
+	Graph.AddConnection(idC, idA);
 	// Spawn the Agent
 	Agent = GetWorld()->SpawnActor<ASteeringAgent>(SteeringAgentClass, 
 	FVector{0,0,90}, FRotator::ZeroRotator);
@@ -97,17 +103,29 @@ void ALevel_GraphTheory::Tick(float DeltaTime)
 #pragma endregion UI
 	
 	Renderer.RenderGraph(Graph);
-	
-	// TODO Check if the graph has updated
-	// TODO if so, run the EulerianPath algorithm
-	// TODO if a path is found, have the agent follow it
+	if (PlayerGraphEditor->HasGraphUpdated())
+	{
+		EulerianPath eulerAlgo{&Graph};
+		Eulerianity euleranity{};
+		auto trail = eulerAlgo.FindPath(euleranity);
+		
+		UE_LOG(LogTemp, Warning, TEXT("Trail size: %d"), (int)trail.size());
+		UE_LOG(LogTemp, Warning, TEXT("Eulerianity: %d"), (int)euleranity);
+		if (!trail.empty())
+		{
+			UpdateAgentPath(trail);
+		}
+	}
 }
 
 void ALevel_GraphTheory::UpdateAgentPath(std::vector<Node*> const& Trail)
 {
 	std::vector<FVector2D> path{};
 	
-	// TODO convert Node vector to positions vector
+	for (const Node* node:Trail)
+	{
+		path.push_back(node->GetPosition());
+	}
 
 	PathFollow.SetPath(path);
 	if (path.size() > 0)
