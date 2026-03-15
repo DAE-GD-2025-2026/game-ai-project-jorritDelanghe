@@ -32,22 +32,20 @@ namespace GameAI
 	}
 
 	inline Eulerianity EulerianPath::IsEulerian() const
-	{
-		
-		// TODO Count nodes with odd degree 
-		
-		// TODO A connected graph with more than 2 nodes with an odd degree (an odd amount of connections) is not Eulerian
-
-		// TODO A connected graph with exactly 2 nodes with an odd degree is Semi-Eulerian (unless there are only 2 nodes)
-		// TODO An Euler trail can be made, but only starting and ending in these 2 nodes
-
-		// TODO A connected graph with no odd nodes is Eulerian
-		
-		// if (IsConnected() == Eulerianity::notEulerian)
-		// {
+	{		
+		int numberOfOddDegree{};
+		for (const auto& node : m_pGraph->GetActiveNodes())
+		{
+			auto connections = m_pGraph->FindConnectionsFrom(node->GetId());
+			if (connections.size() % 2 != 0)
+			{
+				++numberOfOddDegree;
+			}
+		}
+		if (!IsConnected()) return Eulerianity::notEulerian;
+		if (numberOfOddDegree==0) return Eulerianity::eulerian;
+		if (numberOfOddDegree == 2) return Eulerianity::semiEulerian;
 		return Eulerianity::notEulerian;
-		// 	
-		// }
 	}
 
 	inline std::vector<Node*> EulerianPath::FindPath(Eulerianity& eulerianity) const
@@ -57,12 +55,47 @@ namespace GameAI
 		std::vector<Node*> Path = {};
 		std::vector<Node*> Nodes = graphCopy.GetActiveNodes();
 		int currentNodeId{ Graphs::InvalidNodeId };
+		Eulerianity eulrerianity = IsEulerian();
 		
-		// TODO Check if there can be an Euler path
-		// TODO If this graph is not eulerian, return the empty path
-		
-		// TODO Start algorithm loop
+		if (eulrerianity == Eulerianity::notEulerian) return Path;
+		if (eulrerianity == Eulerianity::semiEulerian)
+		{
+			for (auto* node : Nodes)
+			{
+				if (m_pGraph->FindConnectionsFrom(node->GetId()).size()%2 != 0)
+				{
+					currentNodeId = node->GetId();
+					break;
+				}
+			}
+		}
+		else
+		{
+			//full euler-doesnt matter the startindex
+			currentNodeId = Nodes[0]->GetId();
+		}
+		//HierHolzer loop
 		std::stack<int> nodeStack;
+		nodeStack.push(currentNodeId);
+		
+		while (!nodeStack.empty())
+		{
+			auto connections = graphCopy.FindConnectionsFrom(currentNodeId);
+			if (!connections.empty())
+			{
+				nodeStack.push(currentNodeId);
+				int nextNodeId(connections[0]->GetToId());
+				graphCopy.RemoveConnection(currentNodeId,nextNodeId);
+				currentNodeId = nextNodeId;
+			}
+			else
+			{
+				Path.push_back(m_pGraph->GetNode(currentNodeId).get());
+				currentNodeId = nodeStack.top();
+				nodeStack.pop();
+			}
+		}
+		
 
 		std::reverse(Path.begin(), Path.end());
 		return Path;
@@ -70,23 +103,47 @@ namespace GameAI
 
 	inline void EulerianPath::VisitAllNodesDFS(const std::vector<Node*>& Nodes, std::vector<bool>& visited, int startIndex ) const
 	{
-		// TODO Mark the visited node
-
-		// TODO Ask the graph for the connections from that node
-		// TODO recursively visit any valid connected nodes that were not visited before
-		// TODO Tip: use an index-based for-loop to find the correct index
+		visited[startIndex] = true;
+		auto connections = m_pGraph->FindConnectionsFrom(Nodes[startIndex]->GetId());
+		for (auto* connection: connections)
+		{
+			int toId = connection->GetToId();
+			for (size_t i{} ; i<std::size(Nodes);++i)
+			{
+				if (toId == Nodes[i]->GetId() && !visited[i])
+				{
+					VisitAllNodesDFS(Nodes,visited,i);
+				}
+			}
+		}
 	}
 
 	inline bool EulerianPath::IsConnected() const
 	{
 		std::vector<Node*> Nodes = m_pGraph->GetActiveNodes();
-		if (Nodes.size() == 0)
-			return false;
-
-		// TODO choose a starting node
+		std::vector<bool> visited{};
+		visited.reserve(std::size(Nodes));
+			
+		for (size_t i{};i<std::size(Nodes);++i)
+		{
+			visited.emplace_back(false);
+		}
+		int startIndex{0};
+		for (size_t i{};i<std::size(Nodes);++i)
+		{
+			if (!m_pGraph->FindConnectionsFrom(Nodes[i]->GetId()).empty())
+			{
+				startIndex = i;
+				break;
+			}
+		}
 		
-		// TODO start a depth-first-search traversal from the node that has at least one connection
+		VisitAllNodesDFS(Nodes,visited,startIndex);
 		
-		// TODO if a node was never visited, this graph is not connected
+		for (bool visit:visited)
+		{
+			if (visit == false) return false;
+		}
+		return true;
 	}
 }
