@@ -21,6 +21,7 @@ std::vector<Node*> BFS::FindPath(Node* const pStartNode, Node* const pDestinatio
 	Node* currentNode{};
 	
 	queue.push(pStartNode);
+	nodeMap.emplace(pStartNode, nullptr);
 	while (!queue.empty())
 	{
 		currentNode = queue.front();
