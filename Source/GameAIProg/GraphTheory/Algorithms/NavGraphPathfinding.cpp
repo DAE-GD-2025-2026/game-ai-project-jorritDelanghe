@@ -89,7 +89,7 @@ std::vector<FVector2D> NavMeshPathfinding::FindPath(const FVector2D& startPos, c
 	//A star on new graph
 	std::vector<Node*> pathNodes{};
 	AStar aStar{pClonedGraph,HeuristicFunctions::Euclidean};
-	aStar.FindPath(pStartNode,pEndNode);
+	pathNodes = aStar.FindPath(pStartNode,pEndNode);
 
 	//Debug Visualisation
 	debugNodePositions.clear();
