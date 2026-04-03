@@ -5,6 +5,7 @@
 #include "Movement/Pathfinding/Navmesh/TriPolygon.h"
 #include "Shared/Graph/Graph.h"
 #include "Shared/Graph/NavGraph/NavGraphNode.h"
+#include <algorithm>
 
 namespace GameAI
 {
@@ -19,15 +20,37 @@ public:
 	{
 		//Container
 		std::vector<NavLine> Portals = {};
+		if (Path.size() <2) return Portals;
 		
-		//For each node received, get it's corresponding line
+		//degenerate portal
+		FVector2D startPos = Path.front()->GetPosition();
+		Portals.push_back(NavLine{startPos, startPos});
 		
-			//Redetermine it's "orientation" based on the required path (left-right vs right-left) - p1 should be right point
-
-			//Store portal
-
-		//Add degenerate portal to force end evaluation
-
+		for (int i{};i<static_cast<int>(Path.size())-1;++i) //-1 so not out of bounds
+		{
+			NavGraphNode* pCurrent{static_cast<NavGraphNode*>(Path[i])};
+			NavGraphNode* pNext{static_cast<NavGraphNode*>(Path[i+1])};
+			
+			//portal is the edge the current graph sits on
+			const auto& edges = NavPoly.GetEdges();
+			const int edgeIdx = pCurrent->GetEdgeIdx();
+			const auto& edge = edges[edgeIdx];
+			
+			 FVector2D p1{edge.GetP1(NavPoly).X, edge.GetP1(NavPoly).Y};
+			 FVector2D p2{edge.GetP2(NavPoly).X, edge.GetP2(NavPoly).Y};
+			
+			//orientation point 
+			float cross = FVector2D::CrossProduct(p1, p2);
+			if (cross>0.0f)
+			{
+				std::swap(p1,p2);
+			}
+			
+			Portals.push_back(NavLine{p1,p2});
+		}
+		FVector2D endPos = Path.back()->GetPosition();
+		Portals.push_back(NavLine{endPos, endPos});
+		
 		return Portals;
 	}
 
