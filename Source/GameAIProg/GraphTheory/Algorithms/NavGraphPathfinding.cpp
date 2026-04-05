@@ -84,6 +84,12 @@ std::vector<FVector2D> NavMeshPathfinding::FindPath(const FVector2D& startPos, c
 		pClonedGraph->AddConnection(
 				std::move(pConnection)
 			);
+		
+		auto pConnectionReverse = std::make_unique<Connection>(
+neighborNodeId,
+pEndNode->GetId());
+		pConnectionReverse->SetWeight(cost);
+		pClonedGraph->AddConnection(std::move(pConnectionReverse));
 	}
 	
 	//A star on new graph
