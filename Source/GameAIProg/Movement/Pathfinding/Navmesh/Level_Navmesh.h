@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GraphTheory/Level_GraphTheory.h"
 #include "Shared/Graph/NavGraph/NavGraph.h"
+#include "GraphTheory/Algorithms/NavGraphPathfinding.h"
 #include "Level_Navmesh.generated.h"
 
 namespace GameAI
