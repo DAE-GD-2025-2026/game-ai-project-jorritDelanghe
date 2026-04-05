@@ -36,7 +36,7 @@ int GameAI::NavGraph::GetNodeIdFromEdgeIndex(int EdgeIdx) const
 	{
 		for (auto const & pNode : Nodes)
 		{
-			if (reinterpret_cast<NavGraphNode*>(pNode.get())->GetEdgeIdx() == EdgeIdx)
+			if (dynamic_cast<NavGraphNode*>(pNode.get())->GetEdgeIdx() == EdgeIdx)
 			{
 				return pNode->GetId();
 			}
