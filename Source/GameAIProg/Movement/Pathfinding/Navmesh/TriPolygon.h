@@ -61,8 +61,8 @@ public:
 private:
 	int AddVertex(FVector const& Vertex);
 	int AddEdge(Edge const & Edge);
-	
 	std::vector<FVector>  Vertices;
+	
 	std::vector<Edge> Edges;
 	std::vector<Triangle> Triangles;
 };

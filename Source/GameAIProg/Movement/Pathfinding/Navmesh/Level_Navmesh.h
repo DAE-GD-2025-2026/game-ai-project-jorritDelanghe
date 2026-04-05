@@ -7,6 +7,11 @@
 #include "Shared/Graph/NavGraph/NavGraph.h"
 #include "Level_Navmesh.generated.h"
 
+namespace GameAI
+{
+	struct NavLine;
+}
+
 UCLASS()
 class GAMEAIPROG_API ALevel_Navmesh : public ALevel_Base
 {
@@ -36,6 +41,8 @@ private:
 	ASteeringAgent* Agent{nullptr}; // ref
 	PathFollow PathFollow{};
 	std::vector<FVector2D> DebugDrawPath{};
+	std::vector<FVector2D> DebugNodePositions;
+	std::vector<GameAI::NavLine> DebugPortalsOut;
 	
 	bool bDrawNavPolyVertices{false};
 	bool bDrawNavPoly{true};
