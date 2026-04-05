@@ -92,6 +92,7 @@ public:
 					
 					if (portalIdx<amtPortals)
 					{
+						apex = Portals[leftIndex].P1;
 						rightLeg = Portals[rightIndex].P1-apex;
 						leftLeg = Portals[leftIndex].P2-apex;
 						continue;
@@ -120,6 +121,7 @@ public:
 					
 					if (portalIdx<amtPortals)
 					{
+						apex = Portals[rightIndex].P2;
 						rightLeg = Portals[rightIndex].P1-apex;
 						leftLeg = Portals[leftIndex].P2-apex;
 						continue;
