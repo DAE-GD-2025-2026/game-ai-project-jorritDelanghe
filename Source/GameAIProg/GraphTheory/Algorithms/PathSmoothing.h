@@ -34,13 +34,16 @@ public:
 			//portal is the edge the current graph sits on
 			const auto& edges = NavPoly.GetEdges();
 			const int edgeIdx = pCurrent->GetEdgeIdx();
+			if (edgeIdx == -1) continue;
 			const auto& edge = edges[edgeIdx];
 			
 			 FVector2D p1{edge.GetP1(NavPoly).X, edge.GetP1(NavPoly).Y};
 			 FVector2D p2{edge.GetP2(NavPoly).X, edge.GetP2(NavPoly).Y};
 			
 			//orientation point 
-			float cross = FVector2D::CrossProduct(p1, p2);
+			const FVector2D dir{pNext->GetPosition()- pCurrent->GetPosition()};
+			const FVector2D toP1{p1- pCurrent->GetPosition()};
+			float cross = FVector2D::CrossProduct(dir, toP1);
 			if (cross>0.0f)
 			{
 				std::swap(p1,p2);
@@ -57,30 +60,79 @@ public:
 	static std::vector<FVector2D> OptimizePortals( std::vector<NavLine> const & Portals, TriPolygon const & NavPoly)
 	{
 		std::vector<FVector2D> Path{};
-		//P1 == right point of portal, P2 == left point of portal
+		if (Portals.empty()) return Path;
+		FVector2D apex {Portals[0].P1}; //start point
+		FVector2D rightLeg{FVector2D::ZeroVector};
+		FVector2D leftLeg{FVector2D::ZeroVector};
 		
-			//--- RIGHT CHECK ---
-			//1. See if moving funnel inwards - RIGHT
+		int rightIndex{0}; //portalindex right leg points too
+		int leftIndex{0};
+		const int amtPortals{static_cast<int>(Portals.size())};
+		
+		Path.push_back(apex);
+		
+		for (int portalIdx{1}; portalIdx<amtPortals; ++portalIdx)
+		{
+			const NavLine& portal {Portals[portalIdx]};
+			//right check
+			FVector2D newRightLeg{portal.P1-apex};
+			const float crossRight{static_cast<float>(FVector2D::CrossProduct(rightLeg,newRightLeg))};
 			
-				//2. See if new line degenerates a line segment - RIGHT
-				
-					//Leftleg becomes new apex point
-
-					//Calculate new legs (if not the end)
-
-
-			//--- LEFT CHECK ---
-			//1. See if moving funnel inwards - LEFT
-
-				//2. See if new line degenerates a line segment - LEFT
-
-					//Rightleg becomes new apex point
-
-					//Calculate new legs (if not the end)
-
-
-		// Add last path point
-
+			if (crossRight>=0.0f)
+			{
+				//check cross over left
+				const float crossOverLeft{static_cast<float>(FVector2D::CrossProduct(leftLeg,newRightLeg))};
+				if (crossOverLeft>0.0f)
+				{
+					apex+=leftLeg; //move apex to the tip of the left leg
+					Path.push_back(apex);
+					
+					portalIdx = leftIndex+1;
+					rightIndex = leftIndex;
+					
+					if (portalIdx<amtPortals)
+					{
+						rightLeg = Portals[rightIndex].P1-apex;
+						leftLeg = Portals[leftIndex].P2-apex;
+						continue;
+					}
+				}
+				else
+				{
+					rightLeg = newRightLeg;
+					rightIndex = portalIdx;
+				}
+			}
+			//left check
+			FVector2D newLeftLeg{portal.P2 - apex};
+			const float cross {static_cast<float>(FVector2D::CrossProduct(leftLeg,newLeftLeg))};
+			
+			if (cross<=0.0f)
+			{
+				const float crossOverRight{static_cast<float>(FVector2D::CrossProduct(rightLeg,newLeftLeg))};
+				if (crossOverRight<0.0f)
+				{
+					apex += rightLeg;
+					Path.push_back(apex);
+					
+					portalIdx = rightIndex+1;
+					leftIndex = rightIndex;
+					
+					if (portalIdx<amtPortals)
+					{
+						rightLeg = Portals[rightIndex].P1-apex;
+						leftLeg = Portals[leftIndex].P2-apex;
+						continue;
+					}
+				}
+				else //no cross
+				{
+					leftLeg = newLeftLeg;
+					leftIndex = portalIdx;
+				}
+			}
+		}
+		Path.push_back(Portals.back().P1);
 		return Path;
 	}
 private:
