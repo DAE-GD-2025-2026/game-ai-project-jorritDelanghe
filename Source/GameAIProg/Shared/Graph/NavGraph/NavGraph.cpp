@@ -63,7 +63,7 @@ void GameAI::NavGraph::CreateNavigationGraph()
 		{
 			const FVector p1{edges[i].GetP1(*pNavPoly)};
 			const FVector p2{edges[i].GetP2(*pNavPoly)};
-			FVector2D middlePoint{(p1.X + p2.X)/2.f, (p1.Y + p2.Y/2.f)};
+			FVector2D middlePoint{(p1.X + p2.X)/2.f, (p1.Y + p2.Y)/2.f};
 			AddNode(std::make_unique<NavGraphNode>(middlePoint,i));
 		}
 	}
