@@ -12,12 +12,12 @@ class State //interface
 public:
 	virtual ~State() = default;
 	
-	virtual void Update(float deltaTime,UBlackboardComponent * blackBoard);
-	virtual void OnEnter(UBlackboardComponent * blackBoard);
-	virtual void OnExit(UBlackboardComponent * blackBoard);
+	virtual void Update(float deltaTime,UBlackboardComponent * blackBoard){}
+	virtual void OnEnter(UBlackboardComponent * blackBoard){}
+	virtual void OnExit(UBlackboardComponent * blackBoard){}
 	
 	//for debugging
-	virtual std::string GetName() const; 
+	virtual std::string GetName() const{return "State";}
 };
 struct Transition // Links a From state to a To state using a condition
 {
@@ -49,7 +49,7 @@ public:
 		
 		for (const auto& transition : Transitions)
 		{
-			if (transition.From == CurrentState && transition.Condition)
+			if (transition.From == CurrentState && transition.Condition && transition.Condition() )
 			{
 				ChangeState(transition.To, BlackBoard);
 				break;
