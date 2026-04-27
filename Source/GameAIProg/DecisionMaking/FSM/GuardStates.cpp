@@ -66,6 +66,10 @@ void PatrolState::OnExit(UBlackboardComponent* BlackBoard)
 	SeekBehavior = nullptr;
 }
 //chase
+ChaseState::ChaseState(ASteeringAgent* InGuard)
+	: GuardAgent(InGuard)
+{
+}
 void ChaseState::OnEnter(UBlackboardComponent* BlackBoard)
 {
 	UE_LOG(LogTemp, Log, TEXT("[FSM] Entering Chase"));
@@ -93,6 +97,11 @@ void ChaseState::OnExit(UBlackboardComponent* BlackBoard)
 	SeekBehavior = nullptr;
 }
 //search
+SearchState::SearchState(ASteeringAgent* InGuard, float InMaxSearchTime)
+	: GuardAgent(InGuard)
+	, MaxSearchTime(InMaxSearchTime)
+{
+}
 void SearchState::OnEnter(UBlackboardComponent* BlackBoard)
 {
 	UE_LOG(LogTemp, Log, TEXT("[FSM] Entering Search"));
