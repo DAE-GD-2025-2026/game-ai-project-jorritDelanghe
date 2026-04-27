@@ -99,7 +99,7 @@ void SearchState::OnEnter(UBlackboardComponent* BlackBoard)
 	if (!GuardAgent || !BlackBoard) return;
 	bReachedLastPos = false;
 	
-	const float Now{GuardAgent->GetWorld()->GetTimeSeconds()};
+	const float Now{static_cast<float>(GuardAgent->GetWorld()->GetTimeSeconds())};
 	BlackBoard->SetValueAsFloat(GuardBlackBoardKeys::SearchStartTime, Now);
 	
 	SeekBehavior = new Seek();
