@@ -7,9 +7,8 @@
 
 #include "CoreMinimal.h"
 #include "BrainComponent.h"
-#include "FSMComponent.generated.h"
 #include "FSM.h"
-
+#include "FSMComponent.generated.h"
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class GAMEAIPROG_API UFSMComponent : public UBrainComponent
 {
