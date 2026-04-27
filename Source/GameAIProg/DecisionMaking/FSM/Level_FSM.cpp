@@ -29,6 +29,9 @@ void ALevel_FSM::BeginPlay()
 	  FVector{300, 300, 90},
 	  FRotator::ZeroRotator);
 	ThiefAgent->SetDebugRenderingEnabled(true);
+	ThiefSeek = new Seek();
+	ThiefSeek->SetTarget(MouseTarget);
+	ThiefAgent->SetSteeringBehavior(ThiefSeek);
 	
 	AGameAIController* AIController = Cast<AGameAIController>(GuardAgent->GetController());
 	if (!AIController) return;
@@ -170,5 +173,10 @@ void ALevel_FSM::BeginPlay()
 void ALevel_FSM::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	if (ThiefSeek)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("MouseTarget pos: %s"), *MouseTarget.Position.ToString());
+		ThiefSeek->SetTarget(MouseTarget);
+	}
 }
 

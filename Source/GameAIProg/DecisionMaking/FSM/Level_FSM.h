@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Shared/Level_Base.h"
+#include "Movement/SteeringBehaviors/Steering/SteeringBehaviors.h"
 #include "Level_FSM.generated.h"
 
 UCLASS()
@@ -28,6 +29,7 @@ private:
 	
 	UPROPERTY()
 	ASteeringAgent* ThiefAgent{nullptr};
+	Seek* ThiefSeek{nullptr};
 	
 	// Patrol waypoints for the guard
 	TArray<FVector> PatrolWayPoints
