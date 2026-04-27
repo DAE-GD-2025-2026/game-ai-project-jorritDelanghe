@@ -24,5 +24,18 @@ protected:
 
 private:
 	UPROPERTY()
-	ASteeringAgent* Agent{nullptr}; // ref
+	ASteeringAgent* GuardAgent{nullptr}; // ref
+	
+	UPROPERTY()
+	ASteeringAgent* ThiefAgent{nullptr};
+	
+	// Patrol waypoints for the guard
+	TArray<FVector> PatrolWayPoints
+	{
+		FVector{  500,    0, 90},
+		FVector{  500,  500, 90},
+		FVector{ -500,  500, 90},
+		FVector{ -500, -500, 90},
+		FVector{  500, -500, 90},
+	};
 };
