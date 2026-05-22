@@ -26,6 +26,10 @@ std::vector<Node*>AStar::FindPath(Node* const pStartNode, Node* const pGoalNode)
 	openList.push_back(startRecord);
 	NodeRecord currentRecord{};
 	
+	NodeRecord closestNodeRecord{};
+	float closestHeuristicCost{std::numeric_limits<float>::max()};
+	bool bFoundAnyClosedNode{false};
+	
 	while (!openList.empty())
 	{
 		currentRecord = *std::min_element(openList.begin(), openList.end());
@@ -33,8 +37,7 @@ std::vector<Node*>AStar::FindPath(Node* const pStartNode, Node* const pGoalNode)
 		if (currentRecord.pNode == pGoalNode)
 		{
 			break;
-		}
-		
+		}		
 		auto connections = pGraph->FindConnectionsFrom(currentRecord.pNode->GetId());
 		for (auto* connection : connections)
 		{
@@ -84,12 +87,32 @@ std::vector<Node*>AStar::FindPath(Node* const pStartNode, Node* const pGoalNode)
 				openList.end(), 
 				currentRecord));
 			closedList.push_back(currentRecord);
+		
+		
+		//checks distance between estimated end point and current record
+		if (currentRecord.pNode != pStartNode)
+		{
+			const float currentHeuristicCost{GetHeuristicCost(currentRecord.pNode, pGoalNode)};
+			if (currentHeuristicCost <= closestHeuristicCost)
+			{
+				closestHeuristicCost = currentHeuristicCost;
+				closestNodeRecord = currentRecord;
+				bFoundAnyClosedNode = true;
+			}
+		}
 	}
-	
-	if (currentRecord.pNode == pGoalNode)
-	{
+		//fall back node
+		if (currentRecord.pNode != pGoalNode)
+		{
+			if (!bFoundAnyClosedNode)
+			{
+				return path;
+			}
+			currentRecord = closestNodeRecord;
+		}
 		while (currentRecord.pNode != pStartNode)
 		{
+			
 			path.push_back(currentRecord.pNode);
 			int fromId = currentRecord.pConnection->GetFromId();
 			Node* pFromNode = pGraph->GetNode(fromId).get();
@@ -103,7 +126,7 @@ std::vector<Node*>AStar::FindPath(Node* const pStartNode, Node* const pGoalNode)
 		}
 		path.push_back(pStartNode);
 		std::reverse(path.begin(), path.end());
-	}
+	
 	return path;
 }
 
